@@ -1,7 +1,6 @@
 // CRUD operations
 
-const mongodb = require('mongodb');
-const MongoClient = mongodb.MongoClient;
+const { MongoClient, ObjectId } = require('mongodb');
 
 const connectionURL = 'mongodb://127.0.0.1:27017';
 const databaseName = 'task-manager';
@@ -16,49 +15,45 @@ MongoClient.connect(
       return console.log('Unable to connect to database');
     }
 
+    // const db = client.db(databaseName);
+    // db.collection('Users').findOne(
+    //   {
+    //     _id: new ObjectId('60f647d128bfd82ea1f90ed6')
+    //   },
+    //   (error, user) => {
+    //     if (error) {
+    //       return console.log('Unable to fetch');
+    //     }
+    //     console.log(user);
+    //   }
+    // );
+
+    // db.collection('Users')
+    //   .find({
+    //     age: 1
+    //   })
+    //   .toArray((error, users) => {
+    //     console.log(users);
+    //   });
+
+    // db.collection('Users')
+    //   .find({
+    //     age: 1
+    //   })
+    //   .count((error, count) => {
+    //     console.log(count);
+    //   });
+
     const db = client.db(databaseName);
-    db.collection('Users').insertMany(
-      [
-        {
-          name: 'Nikith',
-          age: 1
-        },
-        {
-          name: 'Praveen',
-          age: 30
-        }
-      ],
-      (error, result) => {
+    db.collection('Tasks')
+      .find({
+        completed: true
+      })
+      .toArray((error, task) => {
         if (error) {
-          return console.log('Unable to insert user');
+          return console.log('Unable to fetch');
         }
-
-        console.log(result);
-      }
-    );
-
-    db.collection('Tasks').insertMany(
-      [
-        {
-          description: 'Clean the house',
-          completed: true
-        },
-        {
-          description: 'Renew license',
-          completed: false
-        },
-        {
-          description: 'Office deskc',
-          completed: true
-        }
-      ],
-      (error, result) => {
-        if (error) {
-          return console.log('Unable to insert task');
-        }
-
-        console.log(result);
-      }
-    );
+        console.log(task);
+      });
   }
 );
