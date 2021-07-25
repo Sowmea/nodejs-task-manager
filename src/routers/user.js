@@ -8,9 +8,22 @@ router.post('/users', async (req, res) => {
 
   try {
     await user.save();
-    return res.status(201).send(result);
+    return res.status(201).send(user);
   } catch (error) {
     return res.status(500).send(error);
+  }
+});
+
+router.post('/users/login', async (req, res) => {
+  try {
+    const user = await User.findByCredentials(
+      req.body.email,
+      req.body.password
+    );
+    console.log(user);
+    res.send(user);
+  } catch (error) {
+    res.status(400).send();
   }
 });
 
@@ -55,11 +68,6 @@ router.patch('/users/:id', async (req, res) => {
     updates.forEach(update => (user[update] = req.body[update]));
 
     await user.save();
-
-    // const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-    //   new: true,
-    //   runValidators: true
-    // });
 
     if (!user) {
       return res.status(400).send();
