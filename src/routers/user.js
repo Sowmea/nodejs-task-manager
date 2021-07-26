@@ -8,7 +8,9 @@ router.post('/users', async (req, res) => {
 
   try {
     await user.save();
-    return res.status(201).send(user);
+
+    const token = await user.generateAuthToken();
+    return res.status(201).send({ user, token });
   } catch (error) {
     return res.status(500).send(error);
   }
@@ -20,8 +22,10 @@ router.post('/users/login', async (req, res) => {
       req.body.email,
       req.body.password
     );
+
+    const token = await user.generateAuthToken();
     console.log(user);
-    res.send(user);
+    res.send({ user, token });
   } catch (error) {
     res.status(400).send();
   }
