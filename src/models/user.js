@@ -51,15 +51,25 @@ const userSchema = new mongoose.Schema({
   ]
 });
 
+userSchema.methods.toJSON = function() {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+  return userObject;
+};
+
 userSchema.methods.generateAuthToken = async function() {
   const user = this;
-  const token = jwt.sign({ _id: user._id.toString() }, 'thisismysecret');
-  user.tokens = user.tokens.concat({
-    token: token
-  });
+  const token = jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
+
+  user.tokens = user.tokens.concat({ token });
   await user.save();
+
   return token;
 };
+
 userSchema.statics.findByCredentials = async (email, password) => {
   const user = await User.findOne({
     email
@@ -80,16 +90,13 @@ userSchema.statics.findByCredentials = async (email, password) => {
 userSchema.pre('save', async function(next) {
   const user = this;
 
-  console.log(
-    'Before saving: is password modified - ' + user.isModified('password')
-  );
-
   if (user.isModified('password')) {
     user.password = await bcrypt.hash(user.password, 8);
   }
 
   next();
 });
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
