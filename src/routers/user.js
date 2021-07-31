@@ -7,7 +7,16 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 
 const upload = multer({
-  dest: 'images'
+  dest: 'images',
+  limits: {
+    filesize: 1000000
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error('Please upload an image'));
+    }
+    return cb(undefined, true);
+  }
 });
 
 router.post('/users', async (req, res) => {
