@@ -17,10 +17,11 @@ router.post('/tasks', auth, async (req, res) => {
   }
 });
 
-router.get('/tasks', async (req, res) => {
+router.get('/tasks', auth, async (req, res) => {
   try {
-    const task = await Task.find({});
-    res.send(task);
+    // const task = await Task.find({ owner: req.user._id });
+    await req.user.populate('tasks').execPopulate();
+    res.send(req.user.tasks);
   } catch (error) {
     res.status(400).send(error);
   }
@@ -42,7 +43,7 @@ router.get('/tasks/:id', auth, async (req, res) => {
   }
 });
 
-router.patch('/tasks/:id', async (req, res) => {
+router.patch('/tasks/:id', auth, async (req, res) => {
   const allowedUpdates = ['description', 'completed'];
   const updates = Object.keys(req.body);
 
@@ -56,13 +57,17 @@ router.patch('/tasks/:id', async (req, res) => {
   }
 
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findOne({
+      _id: req.params.id,
+      owner: req.user._id
+    });
 
-    updates.forEach(update => (task[update] = req.body[update]));
+    // const task = await Task.findById(req.params.id);
 
     if (!task) {
       res.status(404).send('Task not found');
     }
+    updates.forEach(update => (task[update] = req.body[update]));
 
     await task.save();
 
@@ -72,9 +77,14 @@ router.patch('/tasks/:id', async (req, res) => {
   }
 });
 
-router.delete('/tasks/:id', async (req, res) => {
+router.delete('/tasks/:id', auth, async (req, res) => {
   try {
-    const task = await Task.findByIdAndDelete(req.params.id);
+    // const task = await Task.findByIdAndDelete(req.params.id);
+
+    const task = await Task.findOneAndDelete({
+      _id: req.params.id,
+      owner: req.user._id
+    });
 
     if (!task) {
       return res.status(404).send({ Error: 'Task not found' });
